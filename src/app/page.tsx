@@ -1,59 +1,69 @@
 'use client';
-
-// ... (Import sama seperti sebelumnya) ...
 import { Mountains_of_Christmas, Poppins } from 'next/font/google';
 import AudioPlayer from '../components/AudioPlayer';
 import GameCard from '../components/GameCard';
-import Leaderboard from '../components/Leaderboard';
+import Leaderboard from '../components/Leaderboard'; // Import Baru
 import SnowEffect from '../components/SnowEffect';
 import Countdown from '../components/Countdown';
 
-const fontNatal = Mountains_of_Christmas({ weight: ['400', '700'], subsets: ['latin'] });
-const fontBody = Poppins({ weight: ['400', '600', '800'], subsets: ['latin'] });
+const fontNatal = Mountains_of_Christmas({ 
+  weight: ['400', '700'], 
+  subsets: ['latin'],
+  adjustFontFallback: false 
+});
+
+const fontBody = Poppins({ 
+  weight: ['400', '600', '800'], 
+  subsets: ['latin'] 
+});
 
 export default function Home() {
   return (
-    <main className={`min-h-screen w-full bg-[#050912] text-white flex flex-col items-center relative overflow-y-auto ${fontBody.className}`}>
+    <main className={`min-h-screen w-full bg-[#020617] text-white flex flex-col items-center relative overflow-x-hidden ${fontBody.className}`}>
       
       <SnowEffect />
       <AudioPlayer />
       
       {/* Background Glow */}
       <div className="fixed inset-0 pointer-events-none z-0">
-        <div className="absolute -top-[10%] left-[20%] w-[400px] h-[400px] bg-red-600/10 rounded-full blur-[100px] animate-pulse"></div>
-        <div className="absolute -bottom-[10%] right-[20%] w-[400px] h-[400px] bg-green-600/10 rounded-full blur-[100px] animate-pulse delay-1000"></div>
+        <div className="absolute -top-[10%] left-[20%] w-[500px] h-[500px] bg-purple-900/20 rounded-full blur-[120px] animate-pulse"></div>
+        <div className="absolute -bottom-[10%] right-[20%] w-[500px] h-[500px] bg-blue-900/20 rounded-full blur-[120px] animate-pulse delay-1000"></div>
       </div>
 
-      {/* WRAPPER UTAMA */}
-      <div className="z-10 w-full max-w-5xl flex flex-col p-4 md:p-6 gap-6 md:gap-8">
+      <div className="z-10 w-full max-w-6xl flex flex-col p-4 md:p-8 gap-6">
         
         {/* HEADER */}
-        <div className="text-center flex-shrink-0 mt-4 md:mt-0">
-          <h1 className={`text-4xl md:text-6xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-red-500 via-amber-200 to-green-500 drop-shadow-sm leading-tight ${fontNatal.className}`}>
+        <div className="text-center flex-shrink-0 mt-4">
+          <h1 className={`text-5xl md:text-7xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-yellow-200 via-purple-200 to-pink-200 drop-shadow-sm leading-tight ${fontNatal.className}`}>
             Mystery Fate 2026
           </h1>
-          <Countdown />
+          <p className="text-[10px] md:text-xs text-gray-500 tracking-[0.5em] uppercase mt-2 opacity-80">
+            Cek Nasib & Keberuntunganmu
+          </p>
+          <div className="mt-4"><Countdown /></div>
         </div>
 
-        {/* MAIN GRID */}
-        {/* items-start: Agar jika tinggi beda, tidak memaksa stretching aneh */}
+        {/* GRID LAYOUT: KIRI GAME, KANAN LEADERBOARD */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pb-10 items-start">
           
-          {/* Kolom Kiri: Game Card */}
-          <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-3xl p-5 md:p-6 shadow-2xl relative group min-h-[420px] flex flex-col justify-center">
-             <div className="absolute inset-0 rounded-3xl border border-white/0 group-hover:border-white/10 transition-colors pointer-events-none"></div>
-             <GameCard />
+          {/* KOLOM KIRI: GAME */}
+          <div className="w-full">
+            <GameCard />
           </div>
 
-          {/* Kolom Kanan: Leaderboard */}
+          {/* KOLOM KANAN: LEADERBOARD */}
           <div className="w-full">
              <Leaderboard />
           </div>
 
         </div>
 
-        <div className="text-center text-[10px] text-gray-600 pb-4">
-          Happy New Year 2026 🎆
+        {/* FOOTER */}
+        <div className="text-center border-t border-white/5 pt-6 pb-8">
+          <p className="text-[10px] text-gray-600">
+            © 2025 Mystery Fate Project. For Entertainment Purpose Only.<br/>
+            Dibuat dengan ☕ & 💻
+          </p>
         </div>
 
       </div>

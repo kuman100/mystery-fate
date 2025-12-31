@@ -1,86 +1,101 @@
 'use client';
-
 import { useEffect, useState } from 'react';
 import { db } from '../app/firebase';
-import { ref, onValue, query, orderByChild, limitToLast } from 'firebase/database';
-import { Player } from '../lib/gameData';
+import { ref, query, orderByChild, limitToLast, limitToFirst, onValue } from 'firebase/database';
+import { Player } from '../lib/algorithm';
 
 export default function Leaderboard() {
-  const [leaderboard, setLeaderboard] = useState<Player[]>([]);
+  const [activeTab, setActiveTab] = useState<'sultan' | 'ngenes'>('sultan');
+  const [sultans, setSultans] = useState<Player[]>([]);
+  const [ngenes, setNgenes] = useState<Player[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Ambil 50 data terakhir
-    const playersRef = query(ref(db, 'players'), orderByChild('skor'), limitToLast(50));
-    
-    const unsubscribe = onValue(playersRef, (snapshot) => {
+    // 1. Ambil 10 Sultan (Skor Tertinggi)
+    const sultanRef = query(ref(db, 'players'), orderByChild('skor'), limitToLast(10));
+    // 2. Ambil 10 Ngenes (Skor Terendah)
+    const ngenesRef = query(ref(db, 'players'), orderByChild('skor'), limitToFirst(10));
+
+    const unsubSultan = onValue(sultanRef, (snapshot) => {
       const data: Player[] = [];
-      if (snapshot.exists()) {
-        snapshot.forEach((child) => {
-          data.push(child.val() as Player);
-        });
-      }
-      setLeaderboard(data.reverse());
+      snapshot.forEach((child) => { data.push(child.val()); });
+      // Firebase urutannya Ascending (kecil ke besar), jadi untuk Sultan harus dibalik
+      setSultans(data.reverse());
+    });
+
+    const unsubNgenes = onValue(ngenesRef, (snapshot) => {
+      const data: Player[] = [];
+      snapshot.forEach((child) => { data.push(child.val()); });
+      // Ngenes tidak perlu dibalik karena sudah Ascending (kecil ke besar)
+      setNgenes(data);
       setLoading(false);
     });
 
-    return () => unsubscribe();
+    return () => { unsubSultan(); unsubNgenes(); };
   }, []);
 
+  const ListPlayer = ({ data, type }: { data: Player[], type: 'sultan' | 'ngenes' }) => (
+    <div className="space-y-3 mt-4 h-[400px] overflow-y-auto pr-2 custom-scrollbar">
+      {data.map((p, i) => (
+        <div key={i} className={`p-3 rounded-xl border flex items-center justify-between transition-all hover:scale-[1.02] ${
+            type === 'sultan' 
+            ? 'bg-gradient-to-r from-yellow-900/20 to-transparent border-yellow-500/20' 
+            : 'bg-gradient-to-r from-gray-800/40 to-transparent border-gray-700/50'
+        }`}>
+            <div className="flex items-center gap-3">
+                <div className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm ${
+                    i === 0 ? 'bg-yellow-500 text-black' : 
+                    i === 1 ? 'bg-gray-400 text-black' : 
+                    i === 2 ? 'bg-orange-700 text-white' : 'bg-gray-800 text-gray-400'
+                }`}>
+                    {i + 1}
+                </div>
+                <div>
+                    <div className="font-bold text-sm text-white capitalize">{p.nama}</div>
+                    <div className="text-[10px] text-gray-400">{p.karakter}</div>
+                </div>
+            </div>
+            <div className={`font-black text-xl ${type === 'sultan' ? 'text-yellow-400' : 'text-gray-400'}`}>
+                {p.skor}%
+            </div>
+        </div>
+      ))}
+      {data.length === 0 && !loading && (
+          <div className="text-center text-gray-500 text-xs py-10">Belum ada data...</div>
+      )}
+    </div>
+  );
+
   return (
-    // PERUBAHAN: Hapus h-full, biarkan tingginya menyesuaikan konten tapi dibatasi
-    <div className="w-full bg-white/5 backdrop-blur-xl border border-white/10 rounded-3xl p-4 md:p-6 shadow-2xl flex flex-col relative overflow-hidden">
+    <div className="w-full h-full bg-gray-900/50 border border-white/10 rounded-3xl p-5 backdrop-blur-sm flex flex-col">
+      <h3 className="text-xl font-black text-center mb-4 uppercase tracking-wider text-white">🏆 Klasemen Hoki</h3>
       
-      {/* Header */}
-      <div className="flex items-center justify-between mb-4 flex-shrink-0 border-b border-white/10 pb-3">
-        <h3 className="text-sm font-bold text-yellow-400 uppercase tracking-widest flex items-center gap-2">
-          🏆 Top 5 Family
-        </h3>
-        <span className="text-[10px] bg-red-600/80 text-white px-2 py-0.5 rounded font-bold animate-pulse border border-red-400">
-          LIVE
-        </span>
+      {/* TABS */}
+      <div className="flex p-1 bg-black/40 rounded-xl mb-2">
+        <button 
+            onClick={() => setActiveTab('sultan')}
+            className={`flex-1 py-2 text-xs font-bold rounded-lg transition-all ${
+                activeTab === 'sultan' ? 'bg-yellow-600 text-white shadow-lg' : 'text-gray-500 hover:text-white'
+            }`}
+        >
+            👑 TOP SULTAN
+        </button>
+        <button 
+            onClick={() => setActiveTab('ngenes')}
+            className={`flex-1 py-2 text-xs font-bold rounded-lg transition-all ${
+                activeTab === 'ngenes' ? 'bg-gray-700 text-white shadow-lg' : 'text-gray-500 hover:text-white'
+            }`}
+        >
+            👻 TOP NGENES
+        </button>
       </div>
 
-      {/* PERUBAHAN UTAMA DI SINI:
-          max-h-[350px] -> Membatasi tinggi agar cuma muat +/- 5 orang
-          overflow-y-auto -> Sisanya di-scroll
-      */}
-      <div className="overflow-y-auto custom-scrollbar space-y-2 pr-2 max-h-[300px] md:max-h-[350px]">
-        
-        {loading && <div className="text-center py-10 text-gray-500 animate-pulse text-xs">Memuat data...</div>}
-
-        {!loading && leaderboard.length === 0 && (
-          <div className="py-10 flex flex-col items-center justify-center opacity-30 text-center">
-            <span className="text-3xl mb-2">👻</span>
-            <p className="text-xs">Belum ada korban...</p>
-          </div>
-        )}
-
-        {leaderboard.map((player, idx) => (
-          <div key={idx} className={`flex items-center gap-3 p-3 rounded-xl border transition-all cursor-default ${player.isEasterEgg ? 'bg-yellow-900/20 border-yellow-500/30' : 'bg-black/20 border-white/5 hover:bg-white/5'}`}>
-            {/* Nomor Ranking */}
-            <div className={`w-8 h-8 flex-shrink-0 flex items-center justify-center rounded-lg font-bold text-sm shadow-lg ${idx === 0 ? "bg-gradient-to-br from-yellow-300 to-yellow-600 text-yellow-900" : idx === 1 ? "bg-gradient-to-br from-gray-300 to-gray-500 text-gray-900" : idx === 2 ? "bg-gradient-to-br from-orange-400 to-amber-700 text-amber-100" : "bg-white/5 text-gray-500"}`}>
-              {idx === 0 ? '👑' : idx + 1}
-            </div>
-
-            {/* Info */}
-            <div className="flex-1 min-w-0">
-              <div className={`font-bold text-sm truncate ${player.isEasterEgg ? 'text-yellow-400' : 'text-white'}`}>{player.nama}</div>
-              <div className="text-[10px] text-gray-400 truncate">{player.karakter}</div>
-            </div>
-
-            {/* Skor */}
-            <div className="text-right">
-              <span className={`block font-black ${idx < 3 ? 'text-yellow-400' : 'text-gray-500'} text-sm`}>{player.skor}%</span>
-            </div>
-          </div>
-        ))}
-      </div>
-      
-      {/* Indikator Scroll Kecil di Bawah */}
-      <div className="text-center mt-2 text-[9px] text-gray-600 italic">
-        Scroll untuk lihat lainnya ↓
-      </div>
+      {/* LIST CONTENT */}
+      {loading ? (
+          <div className="flex-1 flex items-center justify-center text-gray-500 text-xs animate-pulse">Memuat Data...</div>
+      ) : (
+          activeTab === 'sultan' ? <ListPlayer data={sultans} type="sultan"/> : <ListPlayer data={ngenes} type="ngenes"/>
+      )}
     </div>
   );
 }
