@@ -170,7 +170,7 @@ export default function GameCard() {
              </div>
           </div>
           <div className="mt-4 text-[8px] font-mono" style={{ color: '#4b5563' }}>
-            Mainkan di: <b>web-natal-kamu.vercel.app</b>
+            Mainkan di: <b>mystery-fate.vercel.app</b>
           </div>
         </div>
         <div className="mt-4 flex gap-3">
