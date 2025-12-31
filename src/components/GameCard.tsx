@@ -232,7 +232,7 @@ export default function GameCard() {
               </span>
             </button>
         </div>
-        <p className="text-[10px] text-gray-500 mt-10 tracking-[0.2em] opacity-60">MYSTERY FATE PROJECT V22</p>
+        <p className="text-[10px] text-gray-500 mt-10 tracking-[0.2em] opacity-60">MYSTERY FATE PROJECT</p>
       </div>
     );
   }
