@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Poppins } from "next/font/google";
+import Script from "next/script"; // 👈 Import komponen Script
 import "./globals.css";
 
 const poppins = Poppins({ 
@@ -18,7 +19,7 @@ export const metadata: Metadata = {
     siteName: "Mystery Fate 2026",
     images: [
       {
-        url: "https://mystery-fate.vercel.app/og-image.jpg", // Pastikan ada file gambar di folder public
+        url: "https://mystery-fate.vercel.app/og-image.jpg",
         width: 1200,
         height: 630,
       },
@@ -36,6 +37,24 @@ export default function RootLayout({
   return (
     <html lang="id">
       <body className={`${poppins.variable} font-sans bg-[#020617] text-white antialiased`}>
+        
+        {/* 1. Load Library Google Analytics */}
+        <Script
+          strategy="afterInteractive"
+          src="https://www.googletagmanager.com/gtag/js?id=G-99GW8ETXSD"
+        />
+        
+        {/* 2. Konfigurasi ID Anda */}
+        <Script id="google-analytics" strategy="afterInteractive">
+          {`
+            window.dataLayer = window.dataLayer || [];
+            function gtag(){dataLayer.push(arguments);}
+            gtag('js', new Date());
+
+            gtag('config', 'G-99GW8ETXSD');
+          `}
+        </Script>
+
         {children}
       </body>
     </html>
